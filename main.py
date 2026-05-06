@@ -16,6 +16,7 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
+
 def request_admin():
     try:
         result = ctypes.windll.shell32.ShellExecuteW(
