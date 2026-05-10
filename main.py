@@ -16,7 +16,6 @@ def is_admin():
         return ctypes.windll.shell32.IsUserAnAdmin()
     except:
         return False
-
 def request_admin():
     try:
         result = ctypes.windll.shell32.ShellExecuteW(
@@ -33,6 +32,7 @@ def beep():
         pass
 
 def clean_temp():
+    log = []
     temp = tempfile.gettempdir()
     cleaned = 0
     failed = 0
@@ -44,8 +44,10 @@ def clean_temp():
             else :
                 shutil.rmtree(os.path.join(temp, file))
             cleaned += 1
+            log.append({"文件：": file, "状态：": "删除成功"})
         except WindowsError :
             failed += 1
+            log.append({"文件：": file, "状态：": "删除失败"})
     for file in os.listdir(path):
         try:
             if os.path.isfile(os.path.join(path, file)) :
@@ -53,24 +55,30 @@ def clean_temp():
             else :
                 shutil.rmtree(os.path.join(path, file))
             cleaned += 1
+            log.append({"文件：": file, "状态：": "删除成功"})
         except WindowsError as e:
             failed += 1
             print(e)
+            log.append({"文件：": file, "状态：": "删除失败"})
     beep()
     messagebox.showinfo('清理报告','成功清理：'+str(cleaned)+'\n'+'文件正在被使用：'+str(failed))
+    messagebox.showinfo("log", str(log))
 
 def clean_log():
+    log = []
     files_to_delete = glob.glob(r"C:\**\*.log", recursive=True)
     path2 = (os.path.join(os.environ['SystemRoot'], 'Logs'))
     fd = 0
     wd = 0
     def delete_one(file_path):
-        nonlocal fd, wd
+        nonlocal fd, wd, log
         try:
             os.remove(file_path)
             wd += 1
+            log.append({"文件：":file_path, "状态：":"删除成功"})
         except OSError:
             fd += 1
+            log.append({"文件：": file_path, "状态：": "删除失败"})
     print(files_to_delete)
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         executor.map(delete_one, files_to_delete)
@@ -91,6 +99,7 @@ def clean_log():
             print(e)
     beep()
     messagebox.showinfo('清理报告', '成功清理：' + str(wd) + '\n' + '文件正在被使用：' + str(fd))
+    messagebox.showinfo("log",str(log))
 
 def main():
     root = tk.Tk()
